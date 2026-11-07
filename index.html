@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Thai Font Studio</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <span class="doc-dot" id="docDot"></span>
+    <span class="doc-name grow" id="docName">กำลังเชื่อมต่อ Illustrator…</span>
+    <button class="btn quiet icon" id="btnReload" title="โหลด panel ใหม่ (ใช้หลังอัปเดตโค้ด)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v4h4M13 13V9H9M3.6 11A5 5 0 0 0 13 9M12.4 5A5 5 0 0 0 3 7"/></svg></button>
+    <button class="btn quiet icon" id="btnSync" title="ซิงค์"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6.5 9.5a2.5 2.5 0 0 0 3.5 0l2-2a2.5 2.5 0 0 0-3.5-3.5l-.6.6M9.5 6.5a2.5 2.5 0 0 0-3.5 0l-2 2a2.5 2.5 0 0 0 3.5 3.5l.6-.6"/></svg></button>
+    <button class="btn quiet icon" id="btnRescan" title="สแกนสถานะทุกตัวใหม่">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3h-3"/></svg>
+    </button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-tab="draw" role="tab">วาด</button>
+    <button class="tab" data-tab="spacing" role="tab">ช่องไฟ</button>
+    <button class="tab" data-tab="marks" role="tab">สระ/วรรณยุกต์</button>
+    <button class="tab" data-tab="auto" role="tab">จูนอัตโนมัติ</button>
+    <button class="tab" data-tab="export" role="tab">ส่งออก</button>
+  </nav>
+
+  <main class="pages">
+    <!-- ================= DRAW ================= -->
+    <section class="page" id="page-draw">
+      <div id="onboard" class="empty hidden">
+        <div class="big">กขฃ Aa</div>
+        <h2>เริ่มโปรเจกต์ฟอนต์</h2>
+        <p id="onboardText">สร้างเอกสาร 800×800 pt พร้อมเส้นไกด์ แล้ววาดทีละตัว ระบบจะสลับ Layer ให้อัตโนมัติเมื่อคุณเลือกตัวอักษรในแผงนี้</p>
+        <button class="btn primary" id="btnNewProject">สร้างเอกสารฟอนต์ใหม่</button>
+        <button class="btn" id="btnUseDoc">ใช้เอกสารนี้</button>
+      </div>
+
+      <div id="drawMain">
+        <div class="current">
+          <div class="spec" id="curSpec"></div>
+          <div class="meta">
+            <div class="gname" id="curName">ก.ไก่</div>
+            <div class="gcode" id="curCode">U+0E01</div>
+            <div class="status-pill" id="curStatus"><i></i><span>ยังไม่ได้วาด</span></div>
+            <div class="nav">
+              <button class="btn icon" id="btnPrev" title="ตัวก่อนหน้า ( [ )"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3 5 8l5 5"/></svg></button>
+              <button class="btn icon" id="btnNext" title="ตัวถัดไป ( ] )"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 3 5 5-5 5"/></svg></button>
+              <button class="btn tweak" id="btnTweak" title="ไปปรับช่องไฟ / ตำแหน่ง / แนวตั้งของตัวนี้โดยเฉพาะ">✎ ปรับเฉพาะตัว</button>
+              <span class="kbd">กด [ ]</span>
+            </div>
+          </div>
+        </div>
+        <div class="issues" id="curIssues"></div>
+
+        <div class="place-bar hidden" id="placeBar">
+          <div class="place-h">
+            <b>ใส่จากที่เลือก</b>
+            <span class="dim">เลือกเส้นบน Canvas แล้วคลิกช่องตัวอักษร ระบบจะคัดลอกไปวางบนเส้นฐานแล้วไปตัวถัดไปให้</span>
+          </div>
+          <div class="place-row">
+            <div class="seg" id="placeSizeSeg">
+              <button data-size="same" class="on" title="ทุกตัวใช้อัตราย่อขยายเดียวกัน สัดส่วนลายมือจึงคงเดิม">ขนาดเท่ากันทุกตัว</button>
+              <button data-size="keep" title="ไม่ย่อขยาย ใช้ขนาดตามที่วาดไว้">ขนาดเดิม</button>
+            </div>
+            <span class="dim" id="placeScale"></span>
+            <button class="btn quiet hidden" id="btnPlaceReset" title="ล้างอัตรา แล้วตั้งใหม่จากตัวถัดไปที่ใส่ (ควรเป็น น หรือ H)">ตั้งใหม่</button>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="seg" id="setSeg">
+            <button data-set="thai" class="on">ไทย</button>
+            <button data-set="latin">อังกฤษ</button>
+            <button data-set="symbols">ตัวเลข</button>
+          </div>
+          <select class="select" id="filterSel" title="กรอง">
+            <option value="all">ทั้งหมด</option>
+            <option value="missing">ยังไม่วาด</option>
+            <option value="done">วาดแล้ว</option>
+            <option value="warn">มีคำเตือน</option>
+            <option value="custom">ปรับเฉพาะตัวแล้ว</option>
+          </select>
+        </div>
+        <div class="toolbar">
+          <input class="search" id="search" placeholder="ค้นหา เช่น ป หรือ 0E1B">
+          <button class="btn" id="btnPlaceMode" title="โหมดใส่จากที่เลือก: เลือกเส้นที่ trace มาบน Canvas แล้วคลิกช่องตัวอักษรเพื่อใส่ทีละตัว">ใส่จากที่เลือก</button>
+          <span class="dim num" id="setCount">0/0</span>
+        </div>
+        <div id="grid"></div>
+      </div>
+    </section>
+
+    <!-- ================= SPACING ================= -->
+    <section class="page hidden" id="page-spacing">
+      <div class="sec">
+        <div class="sec-h"><h3>ความแน่นของตัวอักษร</h3><span class="hint">ใช้กับทุกตัว</span></div>
+        <div class="seg" id="densitySeg"></div>
+        <div class="scrub-grid" style="margin-top:8px">
+          <div id="scrubBase"></div>
+          <div id="scrubRound"></div>
+        </div>
+        <p class="note">ระบบวัดขอบซ้าย-ขวาของแต่ละตัว ตัวที่ขอบโค้งหรือเว้าจะได้ช่องไฟน้อยลงเพื่อให้ดูเท่ากัน</p>
+      </div>
+
+      <div class="sec pg" title="ค่าในกรอบนี้ใช้กับตัวนี้ตัวเดียว ไม่กระทบตัวอื่น">
+        <div class="pg-h">
+          <span class="pg-badge" id="sbBadge">ก</span>
+          <div class="pg-t"><div class="pg-kicker">✎ ปรับเฉพาะตัว</div><h3 id="sbTitle">ก.ไก่</h3></div>
+          <span class="pg-state" id="sbState">อัตโนมัติ</span>
+          <button class="btn quiet" id="btnSbReset" title="คืนค่าอัตโนมัติของตัวนี้">คืนค่า</button>
+        </div>
+        <div id="sbBody">
+          <div class="sb-stage">
+            <svg id="sbSvg" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="sb-legend"><span class="l">◀ ลากขอบสีอำพันเพื่อปรับซ้าย</span><span class="r">ลากขอบสีเขียวฟ้าเพื่อปรับขวา ▶</span></div>
+          </div>
+          <div class="chips sb-ctx" id="sbCtx"></div>
+          <div class="side-pair">
+            <div class="side l">
+              <div class="t">ซ้าย <span class="total num" id="sbLTotal">0<small>pt</small></span></div>
+              <div class="calc" id="sbLCalc">อัตโนมัติ 0 + ปรับ 0</div>
+              <div class="stepper"><button class="btn" data-side="l" data-d="-1">−</button><input id="sbL" type="text" inputmode="numeric"><button class="btn" data-side="l" data-d="1">+</button></div>
+            </div>
+            <div class="side r">
+              <div class="t">ขวา <span class="total num" id="sbRTotal">0<small>pt</small></span></div>
+              <div class="calc" id="sbRCalc">อัตโนมัติ 0 + ปรับ 0</div>
+              <div class="stepper"><button class="btn" data-side="r" data-d="-1">−</button><input id="sbR" type="text" inputmode="numeric"><button class="btn" data-side="r" data-d="1">+</button></div>
+            </div>
+          </div>
+          <div class="adv-line">ความกว้างรวม <b class="num" id="sbAdv">0</b> pt <span class="spacer"></span><span class="faint">Shift + ลาก/คลิก = ทีละ 10</span></div>
+          <div class="vadj" id="vAdj">
+            <div class="vt"><b>แนวตั้ง</b><span class="faint">ลากตัวอักษรในเวทีขึ้น/ลง หรือกด − +</span><span class="total num" id="vdTotal">0<small>pt</small></span></div>
+            <div class="vstep"><button class="btn" data-vd="-1">−</button><input id="vdIn" type="text" inputmode="numeric"><button class="btn" data-vd="1">+</button></div>
+            <label class="check" style="margin-top:7px"><input type="checkbox" id="tailChk">ไม่นับหางใต้เส้นฐาน</label>
+            <div class="vinfo faint">ช่องไฟและ Kerning คิดจากส่วนเหนือเส้นฐานเท่านั้น หางยื่นไปอยู่ใต้ตัวถัดไปได้</div>
+            <div class="vinfo" id="vInfo"></div>
+          </div>
+          <div class="vadj" id="blAdj">
+            <div class="vt"><b>เส้นฐานเฉพาะตัว</b><span class="faint">ยกทั้งตัวพร้อมสระ ช่องไฟไม่เปลี่ยน</span><span class="total num" id="blTotal">0<small>pt</small></span></div>
+            <div class="vstep"><button class="btn" data-bl="-1">−</button><input id="blIn" type="text" inputmode="numeric"><button class="btn" data-bl="1">+</button></div>
+          </div>
+        </div>
+        <div id="sbEmpty" class="tip hidden"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>ลูกเล่นเส้นฐาน</h3><span class="hint" id="fxCount"></span></div>
+        <div class="seg" id="fxScope"><button data-v="thai">พยัญชนะไทย</button><button data-v="latin">อังกฤษ</button><button data-v="all">ทั้งคู่</button></div>
+        <div class="seg" id="fxStyle" style="margin-top:6px"><button data-v="two">สูง/ต่ำ</button><button data-v="three">สูง/กลาง/ต่ำ</button><button data-v="free">อิสระ</button></div>
+        <div class="scrub-grid" style="margin-top:8px"><div id="scrubFxAmount"></div></div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn primary grow" id="btnFxApply">สุ่มความสูง</button>
+          <button class="btn hidden" id="btnFxUndo">ย้อนกลับ</button>
+          <button class="btn quiet" id="btnFxClear">ล้างทั้งหมด</button>
+        </div>
+        <p class="note">สุ่มซ้ำจะเขียนทับค่าของตัวในกลุ่มที่เลือก · ตัวเดียวกันมีความสูงเท่ากันทุกครั้งที่พิมพ์ ปรับต่อทีละตัวได้ที่ "เส้นฐานเฉพาะตัว" · ถ้าต้องการให้ตัวซ้ำสูงต่ำต่างกัน ใช้ "รูปสลับในข้อความ"</p>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>รูปสลับในข้อความ</h3><span class="hint">ตัวซ้ำก็สูงต่ำต่างกัน</span></div>
+        <label class="check"><input type="checkbox" id="altOn">สลับความสูงอัตโนมัติตามลำดับที่พิมพ์</label>
+        <div id="altBody" class="hidden">
+          <div class="seg" id="altScope" style="margin-top:6px"><button data-v="thai">พยัญชนะไทย</button><button data-v="latin">อังกฤษ</button><button data-v="all">ทั้งคู่</button></div>
+          <div class="seg" id="altSteps" style="margin-top:6px"><button data-v="2">2 จังหวะ: ปกติ → ขึ้น</button><button data-v="3">3 จังหวะ: ปกติ → ขึ้น → ลง</button></div>
+          <div class="scrub-grid" style="margin-top:8px"><div id="scrubAltAmount"></div></div>
+          <p class="note">ฟอนต์จะมี glyph เพิ่มตามจำนวนตัวและจังหวะ · นับข้ามสระและวรรณยุกต์ · ใช้ Contextual Alternates (calt) โปรแกรมที่ไม่รองรับหรือปิดไว้จะแสดงรูปปกติ</p>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>ตัวที่ปรับเอง</h3><span class="hint" id="ovCount"></span></div>
+        <div class="list scroll" id="ovList"></div>
+        <div class="note" id="ovAutoNote" style="margin-top:6px"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>คู่ตัวอักษร (Kerning)</h3><span class="hint">ระยะเฉพาะคู่ เช่น AV, To</span></div>
+        <div class="row">
+          <input class="field grow" id="kernInput" placeholder="พิมพ์ 2 ตัว เช่น AV" maxlength="4">
+          <button class="btn" id="btnKernAdd">เพิ่มคู่</button>
+        </div>
+        <div class="list" id="kernList" style="margin-top:6px"></div>
+        <details class="more">
+          <summary>Kerning อัตโนมัติ</summary>
+          <div class="row"><label class="switch"><input type="checkbox" id="kernAuto"><span></span></label><span>คำนวณคู่ที่ห่างเกินไปให้อัตโนมัติ</span></div>
+          <div class="row" style="margin-top:8px"><span class="dim">ใช้กับ</span><div class="seg" id="kernScope"><button data-v="latin" class="on">อังกฤษ/ตัวเลข</button><button data-v="all">ทุกตัว</button></div></div>
+          <div id="scrubKernStrength" style="margin-top:8px"></div>
+          <div class="row" style="margin-top:6px"><div class="grow" id="scrubKernTuck"></div><div class="grow" id="scrubKernDepth"></div></div>
+          <p class="note">อังกฤษ/ตัวเลขคำนวณจากรูปตัวอักษรที่วาดจริง (ความหนาเส้น, x-height, ช่องไฟ n–n / H–H ของคุณเอง) · <b>ชิดใต้แขน</b>: สัดส่วนที่ตัวถัดไปเข้าใต้แขน T/V/Y · <b>ลึกสุด</b>: ความลึกช่องเปิดที่นับ (เท่าความหนาเส้น) · ตัวหางสูงไม่เข้าใต้แขนเอง เพราะก้านชนแขนก่อน</p>
+          <p class="note">คู่ที่ปรับเองในรายการด้านบนจะใช้แทนค่าอัตโนมัติเสมอ</p>
+        </details>
+      </div>
+    </section>
+
+    <!-- ================= MARKS ================= -->
+    <section class="page hidden" id="page-marks">
+      <div class="sec">
+        <div class="specimen"><div class="txt" id="markSpecimen">กิ่ ปี่ ฟ้ ฝั่ ญุ ฐู ฎุ น้ำ สิ้</div></div>
+        <div class="chips" id="specChips" style="margin-top:6px"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>ระยะห่าง</h3><span class="hint">ใช้กับทุกตัว (pt บน Canvas)</span></div>
+        <svg class="mark-diagram" id="markDiagram" viewBox="0 0 320 118"></svg>
+        <div id="gapControls"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>เลื่อนวรรณยุกต์ซ้าย-ขวา</h3><span class="hint">+ = ไปทางขวา</span></div>
+        <div class="tone-grid" id="toneGrid"></div>
+      </div>
+
+      <div class="sec pg" title="ค่าในกรอบนี้ใช้กับตัวนี้ตัวเดียว ไม่กระทบตัวอื่น">
+        <div class="pg-h">
+          <span class="pg-badge" id="anchorBadge">ก</span>
+          <div class="pg-t"><div class="pg-kicker">✎ ปรับเฉพาะตัว</div><h3 id="anchorTitle">ก.ไก่</h3></div>
+          <span class="pg-state" id="anchorState">มาตรฐาน</span>
+          <button class="btn quiet" id="btnAnchorReset" title="คืนค่ามาตรฐานของตัวนี้">คืนค่า</button>
+        </div>
+        <div id="anchorInfo" class="note" style="margin:0 0 8px"></div>
+        <div class="scrub-grid" id="anchorControls"></div>
+      </div>
+    </section>
+
+    <!-- ================= AUTO TUNE ================= -->
+    <section class="page hidden" id="page-auto">
+      <div class="sec">
+        <div class="flow">
+          <span class="on">1 วิเคราะห์</span><i></i><span>2 ดูก่อน/หลัง</span><i></i><span>3 ใช้</span><i></i><span>4 ปรับละเอียด</span>
+        </div>
+        <p class="note" style="margin-top:6px">ระบบวัดจากเส้นที่คุณวาดจริง แล้วเสนอช่องไฟและตำแหน่งสระ/วรรณยุกต์ให้ ยังไม่แก้อะไรจนกว่าจะกด "ใช้" · ค่าที่คุณปรับเองไว้จะไม่ถูกทับ</p>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>จะให้ระบบทำอะไร</h3></div>
+        <div class="col">
+          <label class="check"><input type="checkbox" id="auSpacing">ช่องไฟ ซ้าย-ขวาของทุกตัว</label>
+          <label class="check"><input type="checkbox" id="auGlobals">ระยะรวม A–D (ตามความหนาเส้นของตัวอักษร)</label>
+          <label class="check"><input type="checkbox" id="auMarks">ตำแหน่งสระ/วรรณยุกต์ของพยัญชนะแต่ละตัว (หลบหาง ห่างขอบเท่ากัน)</label>
+        </div>
+        <div class="row" style="margin-top:8px"><span class="dim">ใช้กับ</span>
+          <div class="seg grow" id="auScope"><button data-v="thai" class="on">ภาษาไทย</button><button data-v="all">ทุกตัว</button><button data-v="selected">ตัวที่เลือก</button></div></div>
+        <div class="row" style="margin-top:8px"><span class="dim">สไตล์</span>
+          <div class="seg grow" id="auStyle"><button data-v="tight">ชิด</button><button data-v="normal" class="on">ปกติ</button><button data-v="loose">โปร่ง</button></div></div>
+        <details class="more">
+          <summary>ตั้งค่าขั้นสูง</summary>
+          <div class="scrub-grid" id="auAdv"></div>
+          <label class="check" style="margin-top:8px"><input type="checkbox" id="auOverwrite">เขียนทับค่าที่ฉันปรับเองด้วย</label>
+          <p class="note">ปกติระบบจะข้ามตัวที่คุณปรับเองไว้ (ถือว่าล็อก) ติ๊กข้อนี้เมื่ออยากเริ่มใหม่ทั้งหมด</p>
+        </details>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary grow" id="btnAuAnalyze">วิเคราะห์</button>
+          <button class="btn" id="btnAuUndo">ย้อนกลับ</button>
+        </div>
+        <div id="auEmpty" class="tip hidden"></div>
+      </div>
+
+      <div id="auResult" class="hidden">
+        <div class="sec">
+          <div class="sec-h"><h3>ผลการวิเคราะห์</h3><span class="hint" id="auStem"></span></div>
+          <div class="au-sum" id="auSummary"></div>
+          <div class="row" style="margin-top:8px">
+            <button class="btn primary grow" id="btnAuApply">ใช้ทั้งหมด</button>
+            <button class="btn" id="btnAuCancel">ยกเลิก</button>
+          </div>
+        </div>
+        <div class="sec">
+          <div class="sec-h"><h3>ก่อน / หลัง</h3><span class="hint">ฟอนต์ทดลองจริง</span></div>
+          <div class="au-cmp" id="auCmp"></div>
+        </div>
+        <div class="sec" id="auShapeSec">
+          <div class="sec-h"><h3>กลุ่มรูปทรง</h3><span class="hint">ปรับทั้งกลุ่มพร้อมกัน</span></div>
+          <div id="auShapes"></div>
+        </div>
+        <div class="sec">
+          <div class="sec-h"><h3>ช่องไฟที่จะเปลี่ยน</h3><span class="hint" id="auSpCount"></span></div>
+          <div class="chips" id="auSpChips"></div>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3 id="auGridTitle">ตารางตรวจสระ/วรรณยุกต์</h3><span class="spacer"></span><span class="hint" id="auGridCount"></span></div>
+        <div class="au-legend"><span class="ok">ผ่าน</span><span class="near">ชิดเกินไป</span><span class="collide">ชน</span></div>
+        <div class="au-grid" id="auGrid"></div>
+        <div id="auDetail" class="au-detail hidden"></div>
+      </div>
+    </section>
+
+    <!-- ================= EXPORT ================= -->
+    <section class="page hidden" id="page-export">
+      <div class="sec">
+        <div class="sec-h"><h3>ข้อมูลฟอนต์</h3></div>
+        <div class="labeled">
+          <label for="fFamily">ชื่อฟอนต์</label><input class="field" id="fFamily">
+          <label for="fStyle">น้ำหนัก/สไตล์</label>
+          <select class="select" id="fStyle">
+            <option>Thin</option><option>ExtraLight</option><option>Light</option><option>Regular</option><option>Medium</option>
+            <option>SemiBold</option><option>Bold</option><option>ExtraBold</option><option>Black</option><option>Italic</option><option>Bold Italic</option>
+          </select>
+          <label for="fVersion">เวอร์ชัน</label><input class="field" id="fVersion">
+          <label for="fDesigner">ผู้ออกแบบ</label><input class="field" id="fDesigner">
+          <label for="fCopyright">ลิขสิทธิ์</label><input class="field" id="fCopyright" placeholder="เว้นว่าง = สร้างให้อัตโนมัติ">
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>ตัวอักษรที่ใส่ในฟอนต์</h3><span class="hint" id="exportCount"></span></div>
+        <div class="col">
+          <label class="check"><input type="checkbox" id="exThai">ไทย</label>
+          <label class="check"><input type="checkbox" id="exLatin">อังกฤษ</label>
+          <label class="check"><input type="checkbox" id="exSymbols">ตัวเลขและเครื่องหมาย</label>
+          <label class="check"><input type="checkbox" id="exFallback">ใส่กล่องสี่เหลี่ยมแทนตัวที่ยังไม่วาด</label>
+        </div>
+        <p class="note">ปิดไว้ดีกว่า: ตัวที่ไม่มีในฟอนต์ โปรแกรมจะไปใช้ฟอนต์อื่นแทนแทนที่จะแสดงเป็นกล่อง</p>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>ความสูงบรรทัด</h3></div>
+        <div class="seg" id="metricSeg"><button data-v="auto" class="on">อัตโนมัติ (กันหัว/หางขาด)</button><button data-v="manual">กำหนดเอง</button></div>
+        <div class="metric-readout" id="metricReadout"></div>
+        <div class="scrub-grid hidden" id="metricManual" style="margin-top:8px"></div>
+        <div id="scrubSpace" style="margin-top:8px"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>บันทึกไฟล์</h3></div>
+        <div class="path-box"><div class="field row" id="savePath" style="display:flex">ยังไม่ได้เลือกที่บันทึก</div><button class="btn" id="btnBrowse">เลือก…</button></div>
+        <button class="btn primary wide" id="btnExport" style="margin-top:8px">ส่งออกฟอนต์ (.otf)</button>
+        <div id="exportResult" class="hidden"></div>
+      </div>
+
+      <details class="more" id="importBox">
+        <summary>นำเข้าจากฟอนต์ที่มีอยู่</summary>
+        <div class="dropzone" id="dropzone">เลือกไฟล์ .otf / .ttf / .woff หรือลากมาวางที่นี่</div>
+        <input type="file" id="fileInput" class="hidden" accept=".otf,.ttf,.woff">
+        <div id="importInfo" class="hidden" style="margin-top:8px">
+          <div class="result" id="importSummary"></div>
+          <div class="col" style="margin-top:8px">
+            <label class="check"><input type="checkbox" id="imThai" checked>ไทย</label>
+            <label class="check"><input type="checkbox" id="imLatin" checked>อังกฤษ</label>
+            <label class="check"><input type="checkbox" id="imSymbols" checked>ตัวเลขและเครื่องหมาย</label>
+            <label class="check"><input type="checkbox" id="imFit" checked>ย่อ/ขยายให้ความสูงตัวอักษรพอดีเส้น Cap</label>
+            <label class="check"><input type="checkbox" id="imSpacing" checked>ใช้ช่องไฟเดิมของฟอนต์</label>
+            <label class="check"><input type="checkbox" id="imKerning" checked>ใช้ Kerning เดิม</label>
+            <label class="check"><input type="checkbox" id="imReplace">เขียนทับตัวที่วาดไว้แล้ว</label>
+          </div>
+          <button class="btn primary wide" id="btnImport" style="margin-top:8px">นำเข้า</button>
+          <div class="progress hidden" id="importProgress"><div class="bar"><i></i></div><div class="note" id="importProgressText"></div></div>
+        </div>
+      </details>
+
+      <details class="more">
+        <summary>เส้นไกด์และ Canvas</summary>
+        <div class="scrub-grid" id="canvasControls"></div>
+        <p class="note">ค่าเป็นตำแหน่ง y บน Artboard (pt) · เปลี่ยนแล้วกด "วาดเส้นไกด์ใหม่"</p>
+        <div class="row" style="margin-top:8px">
+          <button class="btn" id="btnGuides">วาดเส้นไกด์ใหม่</button>
+          <span class="spacer"></span>
+          <label class="dim">UPM</label><select class="select" id="fUpm"><option>1000</option><option>1024</option><option>2048</option></select>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <footer class="dock" id="dock">
+    <div class="dock-split" id="dockSplit" title="ลากเพื่อปรับความสูงพื้นที่ทดสอบ · ดับเบิลคลิกเพื่อคืนค่า"></div>
+    <div class="dock-bar">
+      <input class="field" id="previewText" title="พิมพ์ข้อความทดสอบ — แสดงด้วยฟอนต์จริงที่กำลังทำ">
+      <input type="range" id="previewSize" min="14" max="96" title="ขนาด">
+      <span class="dock-status" id="dockStatus"></span>
+      <button class="btn quiet icon" id="btnDock" title="ย่อ/ขยายแถบทดสอบ"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m4 10 4-4 4 4"/></svg></button>
+    </div>
+    <div class="dock-presets" id="dockPresets">
+      <select class="select" id="presetCat" title="หมวดข้อความทดสอบ"></select>
+      <div class="preset-chips" id="presetChips"></div>
+    </div>
+    <div class="dock-err hidden" id="dockErr"></div>
+    <div class="dock-out" id="previewOut"></div>
+  </footer>
+</div>
+<div class="toast off" id="toast"><span id="toastText"></span><button class="btn hidden" id="toastBtn"></button></div>
+
+<script src="libs/CSInterface.js"></script>
+<script src="libs/opentype.min.js"></script>
+<script src="src/settings.js"></script>
+<script src="src/glyph-data.js"></script>
+<script src="src/outline-utils.js"></script>
+<script src="src/spacing.js"></script>
+<script src="src/anchors.js"></script>
+<script src="src/auto-marks.js"></script>
+<script src="src/auto-tune.js"></script>
+<script src="src/latin-kern.js"></script>
+<script src="src/thai-typography.js"></script>
+<script src="src/otl-writer.js"></script>
+<script src="src/font-compiler.js"></script>
+<script src="src/font-importer.js"></script>
+<script src="src/illustrator-api.js"></script>
+<script src="src/ui-controls.js"></script>
+<script src="src/app/core.js"></script>
+<script src="src/app/tab-draw.js"></script>
+<script src="src/app/tab-spacing.js"></script>
+<script src="src/app/tab-marks.js"></script>
+<script src="src/app/tab-auto.js"></script>
+<script src="src/app/tab-export.js"></script>
+<script src="src/app/dock.js"></script>
+</body>
+</html>

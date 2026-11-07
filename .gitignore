@@ -1,0 +1,12 @@
+node_modules/
+__pycache__/
+*.pyc
+_backup_v1/
+dist/
+*.zxp
+.DS_Store
+Thumbs.db
+
+# เก็บไว้ในเครื่องเท่านั้น (ไม่อยู่ใน repo)
+tests/
+.claude/
