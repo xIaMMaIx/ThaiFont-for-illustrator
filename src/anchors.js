@@ -4,7 +4,8 @@
  * กติกา (อธิบายง่าย ๆ):
  *  • สระบนและวรรณยุกต์ "ชิดขอบขวา" ของหลักขวาพยัญชนะ แล้วลอยเหนือหัวตัวอักษรตามระยะ "สระบน"
  *  • พยัญชนะหางสูง (ป ฝ ฟ ฬ และตัวที่หางเกินเส้น Cap เช่น ส ศ บางแบบ) → ขยับสระไปทางซ้ายของหาง
- *  • วรรณยุกต์บนสระบน (ปี่ กิ้) → ซ้อนเหนือสระตามระยะ "วรรณยุกต์ซ้อน"
+ *  • วรรณยุกต์บนสระบน (ปี่ กิ้) → ซ้อนเหนือสระตามระยะ "วรรณยุกต์ซ้อน" แล้วเลื่อนซ้าย/ขวาได้ 3 ชั้น:
+ *    ทุกตัว (marks.stackX) + ตามวรรณยุกต์ (marks.tonesStack) + ตามสระบน (anchors[สระ].sx/sy)
  *  • สระล่างชิดขอบขวาของหลักขวาด้านล่าง ห่างจากเส้นฐาน/หางล่างตามระยะ "สระล่าง"
  * พิกัดทั้งหมดเป็น pt บน Canvas
  * (พัฒนาต่อจากแนวคิด F0NT Autotune ของชุมชนออกแบบฟอนต์ไทย)
@@ -83,7 +84,8 @@
 
   /**
    * จุดยึดของสระ/วรรณยุกต์ (ในพิกัดของตัวมันเอง)
-   * คืน { anchor:{x,y}, top2:{x,y}|null, side:'top'|'bottom' }
+   * คืน { anchor:{x,y}, top2:{x,y}|null, stack:{x,y}|undefined, side:'top'|'bottom' }
+   *   top2  = จุดที่สระบนรับวรรณยุกต์ซ้อน · stack = จุดยึดของวรรณยุกต์เมื่อซ้อนบนสระบน (ใช้ใน mkmk แทน anchor)
    */
   function markAnchor(def, contours, settings) {
     const bbox = O().bbox(contours);
@@ -98,7 +100,14 @@
     if (def.kind === 'mark-tone') x -= Number((mk.tones || {})[def.code]) || 0;
     const pass = def.kind === 'mark-top' && !!(mk.passThrough || {})[def.code];
     const res = { side: pass ? 'through' : 'top', bbox, anchor: { x: x - dx, y: bbox.yMin - dy }, top2: null };
-    if (def.kind === 'mark-top') res.top2 = { x: bbox.xMax, y: bbox.yMax + mk.level2Gap };
+    if (def.kind === 'mark-top') {
+      const sx = Number(ov.sx) || 0, sy = Number(ov.sy) || 0;
+      res.top2 = { x: bbox.xMax + (Number(mk.stackX) || 0) + sx, y: bbox.yMax + mk.level2Gap + sy };
+    }
+    if (def.kind === 'mark-tone') {
+      const st = Number((mk.tonesStack || {})[def.code]) || 0;
+      res.stack = { x: res.anchor.x - st, y: res.anchor.y };
+    }
     return res;
   }
 
@@ -106,4 +115,4 @@
   root.Anchors = Anchors;
   if (typeof module !== 'undefined' && module.exports) module.exports = Anchors;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'anchors': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'anchors': '2.0.0-cba108e5' });

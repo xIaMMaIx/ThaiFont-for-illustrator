@@ -170,15 +170,34 @@ textarea.field { height: auto; padding: 4px 6px; resize: vertical; }
 .current .nav .kbd { margin-left: 8px; color: var(--text-faint); font-size: var(--fs-sm); }
 
 .issues { margin-top: 6px; }
-.place-bar { margin-top: 6px; padding: 7px 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--bg-sunk); font-size: var(--fs-sm); }
-.place-bar .place-h b { display: block; margin-bottom: 2px; }
-.place-bar .place-row { display: flex; align-items: center; flex-wrap: wrap; margin-top: 6px; }
-.place-bar .place-row > * + * { margin-left: 6px; }
-.place-bar .place-row .btn { height: 20px; }
-#btnPlaceMode { flex: 0 0 auto; margin-left: 6px; }
-#btnPlaceMode.on { border-color: var(--accent); color: var(--accent); }
-#grid.placing .cell { cursor: copy; }
-#grid.placing .cell.missing:hover { border-color: var(--accent); }
+.place-help { margin: 0 0 2px; }
+.place-ref-actions { display: flex; margin-top: 6px; }
+.place-ref-actions .btn + .btn { margin-left: 6px; }
+#placeGrid .cell { cursor: copy; }   /* ลูกศรมีเครื่องหมาย + = คลิกเพื่อใส่เส้นที่เลือก */
+.cell-del { position: absolute; top: -5px; left: -5px; width: 16px; height: 16px; border-radius: 50%; background: var(--warn); color: #fff;
+  font-size: 12px; line-height: 15px; text-align: center; cursor: pointer; display: none; z-index: 2; box-shadow: 0 0 0 2px var(--bg); }
+.cell:hover .cell-del { display: block; }
+.cell-del:hover { filter: brightness(1.15); }
+#btnPickDel { margin-left: auto; }
+#btnPickDel.on { border-color: var(--warn); color: var(--warn); }
+.pick-bar { display: flex; align-items: center; margin-top: 6px; padding: 5px 8px; border-left: 2px solid var(--warn); background: var(--bg-sunk); border-radius: 0 4px 4px 0; font-size: var(--fs-sm); }
+.pick-bar #pickCount { flex: 1 1 auto; min-width: 0; color: var(--text-dim); }
+.pick-bar .btn { height: 20px; margin-left: 4px; }
+.btn:disabled { opacity: .45; cursor: default; }
+#placeGrid.picking .cell { cursor: pointer; }
+.cell .cell-pick { position: absolute; top: -5px; left: -5px; width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg);
+  color: transparent; font-size: 10px; line-height: 14px; text-align: center; z-index: 2; pointer-events: none; }
+.cell.picked { border-color: var(--warn); }
+.cell.picked .cell-pick { background: var(--warn); border-color: var(--warn); color: #fff; }
+/* กล่องยืนยัน */
+.dialog-back { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, .45); display: flex; align-items: center; justify-content: center; z-index: 50; padding: 16px; }
+.dialog { background: var(--bg-raised); border: 1px solid var(--line); border-radius: 8px; padding: 14px 14px 12px; max-width: 320px; width: 100%; box-shadow: 0 8px 28px rgba(0, 0, 0, .35); }
+.dialog h3 { margin: 0 0 6px; font-size: 14px; }
+.dialog p { margin: 0; color: var(--text-dim); font-size: var(--fs-sm); line-height: 1.5; }
+.dialog-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
+.dialog-actions .btn + .btn { margin-left: 6px; }
+.btn.danger { background: var(--warn); border-color: var(--warn); color: #fff; }
+#placeScale { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .issue { display: flex; align-items: flex-start; padding: 6px 8px; border-left: 2px solid var(--warn); background: var(--bg-sunk); border-radius: 0 4px 4px 0; font-size: var(--fs-sm); }
 .issue + .issue { margin-top: 4px; }
 .issue .txt { flex: 1 1 auto; }
@@ -269,6 +288,7 @@ textarea.field { height: auto; padding: 4px 6px; resize: vertical; }
 .mark-diagram { display: block; width: 100%; height: 118px; margin-bottom: 4px; }
 .gap-row { display: grid; grid-template-columns: 14px 1fr; grid-column-gap: 6px; align-items: center; }
 .gap-row + .gap-row { margin-top: 6px; }
+#stackXRow { margin: 8px 0; }
 .gap-key { width: 14px; height: 14px; border-radius: 3px; font-size: 9px; font-weight: 700; color: #fff; display: flex; align-items: center; justify-content: center; background: var(--mark); }
 .tone-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: 6px; }
 .tone-grid .scrub .sl { font-family: "TFSPreview", var(--font); font-size: 24px; line-height: 1.6; text-align: center; padding-right: 2px; color: var(--glyph); overflow: visible; }

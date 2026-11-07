@@ -110,6 +110,38 @@
     return d;
   }
 
+  /** กล่องยืนยันในแผง (window.confirm ใช้ไม่ได้แน่นอนใน CEP) · คืน Promise<boolean> · Enter = ยืนยัน, Esc/คลิกนอกกล่อง = ยกเลิก
+   *  opts: { title, text, ok, cancel (false = ไม่มีปุ่มยกเลิก), danger } */
+  function confirmDialog(opts) {
+    opts = opts || {};
+    return new Promise(resolve => {
+      const prevFocus = document.activeElement;
+      const okBtn = el('button', { class: 'btn ' + (opts.danger ? 'danger' : 'primary') }, opts.ok || 'ตกลง');
+      const noBtn = el('button', { class: 'btn' }, opts.cancel || 'ยกเลิก');
+      const box = el('div', { class: 'dialog', role: 'alertdialog', 'aria-modal': 'true' },
+        opts.title ? el('h3', null, opts.title) : null,
+        opts.text ? el('p', null, opts.text) : null,
+        el('div', { class: 'dialog-actions' }, opts.cancel === false ? null : noBtn, okBtn));
+      const back = el('div', { class: 'dialog-back' }, box);
+      const done = v => {
+        document.removeEventListener('keydown', onKey, true);
+        back.remove();
+        try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) { }
+        resolve(v);
+      };
+      const onKey = e => {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); done(false); }
+        else if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); done(true); }
+      };
+      okBtn.onclick = () => done(true);
+      noBtn.onclick = () => done(false);
+      back.addEventListener('mousedown', e => { if (e.target === back) done(false); });
+      document.addEventListener('keydown', onKey, true);
+      document.body.appendChild(back);
+      okBtn.focus();
+    });
+  }
+
   const SVGNS = 'http://www.w3.org/2000/svg';
   function svgEl(tag, attrs) {
     const e = document.createElementNS(SVGNS, tag);
@@ -117,6 +149,6 @@
     return e;
   }
 
-  root.UI = { $, el, scrub, seg, bindSeg, toast, debounce, svgEl, clamp };
+  root.UI = { $, el, scrub, seg, bindSeg, toast, debounce, svgEl, clamp, confirmDialog };
 })(window);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'ui-controls': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'ui-controls': '2.0.0-cba108e5' });

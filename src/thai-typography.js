@@ -97,7 +97,7 @@
       gpos.lookups.push({
         type: 6, flag: 0, subtables: [{
           kind: 'markMark', classCount: 1,
-          marks: tones.map(r => ({ gid: r.gid, cls: 0, x: r.mark.anchor.x, y: r.mark.anchor.y })),
+          marks: tones.map(r => { const a = r.mark.stack || r.mark.anchor; return { gid: r.gid, cls: 0, x: a.x, y: a.y }; }),   // จุดยึดตอนซ้อน (เลื่อนแยกจากตอนไม่ซ้อนได้)
           bases: stackers.map(r => ({ gid: r.gid, anchors: [r.mark.top2] }))
         }]
       });
@@ -132,4 +132,4 @@
   root.ThaiLayout = ThaiLayout;
   if (typeof module !== 'undefined' && module.exports) module.exports = ThaiLayout;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'thai-typography': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'thai-typography': '2.0.0-cba108e5' });

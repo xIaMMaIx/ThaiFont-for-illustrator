@@ -20,6 +20,7 @@
 
   <nav class="tabs" role="tablist">
     <button class="tab on" data-tab="draw" role="tab">วาด</button>
+    <button class="tab" data-tab="place" role="tab" title="ใส่เส้นที่เลือกบน Canvas (เช่น ลายมือที่ trace มา) ลงช่องตัวอักษรทีละตัว">ใส่เส้น</button>
     <button class="tab" data-tab="spacing" role="tab">ช่องไฟ</button>
     <button class="tab" data-tab="marks" role="tab">สระ/วรรณยุกต์</button>
     <button class="tab" data-tab="auto" role="tab">จูนอัตโนมัติ</button>
@@ -54,21 +55,6 @@
         </div>
         <div class="issues" id="curIssues"></div>
 
-        <div class="place-bar hidden" id="placeBar">
-          <div class="place-h">
-            <b>ใส่จากที่เลือก</b>
-            <span class="dim">เลือกเส้นบน Canvas แล้วคลิกช่องตัวอักษร ระบบจะคัดลอกไปวางบนเส้นฐานแล้วไปตัวถัดไปให้</span>
-          </div>
-          <div class="place-row">
-            <div class="seg" id="placeSizeSeg">
-              <button data-size="same" class="on" title="ทุกตัวใช้อัตราย่อขยายเดียวกัน สัดส่วนลายมือจึงคงเดิม">ขนาดเท่ากันทุกตัว</button>
-              <button data-size="keep" title="ไม่ย่อขยาย ใช้ขนาดตามที่วาดไว้">ขนาดเดิม</button>
-            </div>
-            <span class="dim" id="placeScale"></span>
-            <button class="btn quiet hidden" id="btnPlaceReset" title="ล้างอัตรา แล้วตั้งใหม่จากตัวถัดไปที่ใส่ (ควรเป็น น หรือ H)">ตั้งใหม่</button>
-          </div>
-        </div>
-
         <div class="toolbar">
           <div class="seg" id="setSeg">
             <button data-set="thai" class="on">ไทย</button>
@@ -85,7 +71,6 @@
         </div>
         <div class="toolbar">
           <input class="search" id="search" placeholder="ค้นหา เช่น ป หรือ 0E1B">
-          <button class="btn" id="btnPlaceMode" title="โหมดใส่จากที่เลือก: เลือกเส้นที่ trace มาบน Canvas แล้วคลิกช่องตัวอักษรเพื่อใส่ทีละตัว">ใส่จากที่เลือก</button>
           <span class="dim num" id="setCount">0/0</span>
         </div>
         <div id="grid"></div>
@@ -93,6 +78,35 @@
     </section>
 
     <!-- ================= SPACING ================= -->
+    <!-- ================= PLACE ================= -->
+    <section class="page hidden" id="page-place">
+      <p class="note place-help">เลือกเส้นของตัวหนึ่งบน Canvas แล้วคลิกช่องตัวอักษร ระบบจะคัดลอกไปวางบนเส้นฐาน ทำต้นฉบับให้จาง แล้วไปตัวถัดไปให้ · วางลายมือที่ trace มา (Expand + Ungroup แล้ว) ไว้นอก Artboard ใน Layer Reference · ใส่ผิดตัว ชี้ที่ช่องแล้วกด × เพื่อลบ หรือกด "เลือกลบหลายตัว"</p>
+      <div class="toolbar">
+        <div class="seg" id="placeSizeSeg">
+          <button data-size="same" class="on" title="ทุกตัวใช้อัตราย่อขยายเดียวกัน สัดส่วนลายมือจึงคงเดิม">ขนาดเท่ากันทุกตัว</button>
+          <button data-size="keep" title="ไม่ย่อขยาย ใช้ขนาดตามที่วาดไว้">ขนาดเดิม</button>
+        </div>
+        <span class="dim" id="placeScale"></span>
+        <button class="btn quiet hidden" id="btnPlaceReset" title="ล้างอัตรา แล้วตั้งใหม่จากตัวถัดไปที่ใส่ (ควรเป็น ก น หรือ H)">ตั้งใหม่</button>
+      </div>
+      <div class="toolbar">
+        <div class="seg" id="placeSetSeg">
+          <button data-set="thai" class="on">ไทย</button>
+          <button data-set="latin">อังกฤษ</button>
+          <button data-set="symbols">ตัวเลข</button>
+        </div>
+        <button class="btn" id="btnPickDel" title="เลือกหลายช่องแล้วลบเส้นทีเดียว">เลือกลบหลายตัว</button>
+      </div>
+      <div class="pick-bar hidden" id="pickBar">
+        <span id="pickCount"></span>
+        <button class="btn quiet" id="btnPickAll" title="เลือกทุกตัวในชุดนี้ที่มีเส้นแล้ว">เลือกทั้งหมด</button>
+        <button class="btn quiet" id="btnPickCancel">ยกเลิก</button>
+        <button class="btn danger" id="btnPickRun">ลบที่เลือก</button>
+      </div>
+      <div class="issues hidden" id="placeRefWarn"></div>
+      <div id="placeGrid"></div>
+    </section>
+
     <section class="page hidden" id="page-spacing">
       <div class="sec">
         <div class="sec-h"><h3>ความแน่นของตัวอักษร</h3><span class="hint">ใช้กับทุกตัว</span></div>
@@ -210,6 +224,13 @@
       <div class="sec">
         <div class="sec-h"><h3>เลื่อนวรรณยุกต์ซ้าย-ขวา</h3><span class="hint">+ = ไปทางขวา</span></div>
         <div class="tone-grid" id="toneGrid"></div>
+      </div>
+
+      <div class="sec">
+        <div class="sec-h"><h3>วรรณยุกต์ที่ซ้อนบนสระบน</h3><span class="hint">เพิ่มจากตำแหน่งปกติ · + = ไปทางขวา</span></div>
+        <p class="note">ใช้เฉพาะตอนวรรณยุกต์อยู่บนสระบน (กิ่ ปี้ ซึ้ง ปั้) ตำแหน่งตอนไม่มีสระบนไม่เปลี่ยน · ระยะห่างแนวตั้งใช้ค่า B</p>
+        <div class="gap-row" id="stackXRow"></div>
+        <div class="tone-grid" id="toneStackGrid"></div>
       </div>
 
       <div class="sec pg" title="ค่าในกรอบนี้ใช้กับตัวนี้ตัวเดียว ไม่กระทบตัวอื่น">
@@ -400,6 +421,7 @@
 <script src="src/ui-controls.js"></script>
 <script src="src/app/core.js"></script>
 <script src="src/app/tab-draw.js"></script>
+<script src="src/app/tab-place.js"></script>
 <script src="src/app/tab-spacing.js"></script>
 <script src="src/app/tab-marks.js"></script>
 <script src="src/app/tab-auto.js"></script>

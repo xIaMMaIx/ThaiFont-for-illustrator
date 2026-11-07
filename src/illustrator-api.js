@@ -80,6 +80,10 @@
         return r;
       },
       outlineStrokesInPlace: code => ({ sig: sig(code) }),
+      clearGlyphs: codes => { const sigs = {}; let n = 0; codes.forEach(c => { if (has(c)) n++; delete doc.layers[c]; sigs[c] = sig(c); }); return { sigs, cleared: n, restored: 0 }; },
+      // จำลอง Layer อ้างอิง: doc.refItems / doc.refOnBoard ตั้งเองใน Console เพื่อทดสอบ
+      referenceInfo: () => ({ hasDoc: doc.hasDoc, layers: ['Reference (ไม่ถูกส่งออก)'], items: doc.refItems || 0, onBoard: doc.refOnBoard || 0, locked: false, hidden: false, active: doc.active === '_ref' }),
+      activateReference: () => { doc.active = '_ref'; return { name: 'Reference (ไม่ถูกส่งออก)', created: false }; },
       // จำลอง: doc.selection = รายการเส้นแบบเดียวกับ getOutlines (ตั้งค่าเองใน Console เพื่อทดสอบ)
       placeSelection: (code, o) => {
         const sel = doc.selection;
@@ -196,4 +200,4 @@
   const Host = { inCEP, call: invoke, pickSavePath, writeFile, download, reveal, onEvent, hostEnv, mock: inCEP ? null : Mock, lit };
   root.Host = Host;
 })(window);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'illustrator-api': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'illustrator-api': '2.0.0-cba108e5' });

@@ -159,7 +159,8 @@
       if (!u || !t || !u.anc.top2) return;
       const ou = place(aTop, u.anc);
       const shift = (u.anc.side === 'through' && aTop.tall) ? (aTop.top.x - aTop.through.x) : 0;
-      const tx = u.anc.top2.x + ou.dx - t.anc.anchor.x + shift, ty = u.anc.top2.y + ou.dy - t.anc.anchor.y;
+      const ta = t.anc.stack || t.anc.anchor;
+      const tx = u.anc.top2.x + ou.dx - ta.x + shift, ty = u.anc.top2.y + ou.dy - ta.y;
       const d = Math.min(minDist(t.e.smp, u.e.smp, tx - ou.dx, ty - ou.dy), minDist(t.e.smp, baseE.smp, tx, ty));
       push('stack', [uc, tc], d);
     }));
@@ -320,4 +321,4 @@
   root.AutoMarks = AutoMarks;
   if (typeof module !== 'undefined' && module.exports) module.exports = AutoMarks;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'auto-marks': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'auto-marks': '2.0.0-cba108e5' });

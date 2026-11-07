@@ -198,6 +198,10 @@
           const t = r.map(r.markPt.top2.x, r.markPt.top2.y);
           r.mark.top2 = { x: Math.round(t[0]), y: Math.round(t[1]) };
         }
+        if (r.markPt.stack) {
+          const t = r.map(r.markPt.stack.x, r.markPt.stack.y);
+          r.mark.stack = { x: Math.round(t[0]), y: Math.round(t[1]) };
+        }
         r.path = O().toOtPath(ot, r.contours, r.map);
         return;
       }
@@ -394,4 +398,4 @@
   root.FontCompiler = FontCompiler;
   if (typeof module !== 'undefined' && module.exports) module.exports = FontCompiler;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'font-compiler': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'font-compiler': '2.0.0-cba108e5' });

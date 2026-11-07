@@ -145,4 +145,4 @@
   root.GlyphData = GlyphData;
   if (typeof module !== 'undefined' && module.exports) module.exports = GlyphData;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'glyph-data': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'glyph-data': '2.0.0-cba108e5' });

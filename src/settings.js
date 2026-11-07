@@ -21,8 +21,10 @@
       kerning: { auto: false, strength: 1, scope: 'latin', pairs: {}, depth: 1, clear: 0.35, tuck: 0.65, flat: 0.6, smooth: true },  // scope: 'latin' | 'all'  // pairs: { "U+0041|U+0056": -40 }
       marks: {
         upperGap: 22, lowerGap: 20, level2Gap: 16, tallGap: 14, upperX: 0, lowerX: 0,
+        stackX: 0,                         // เลื่อนวรรณยุกต์ที่ซ้อนบนสระบนทุกตัว (+ = ขวา) — บวกเพิ่มจากตำแหน่งปกติ
         passThrough: { 'U+0E31': true },   // เครื่องหมายบนที่ทะลุหางสูงได้ (ไม่หลบซ้าย)
-        tones: { 'U+0E48': 0, 'U+0E49': 0, 'U+0E4A': 0, 'U+0E4B': 0, 'U+0E4C': 0, 'U+0E4E': 0 }
+        tones: { 'U+0E48': 0, 'U+0E49': 0, 'U+0E4A': 0, 'U+0E4B': 0, 'U+0E4C': 0, 'U+0E4E': 0 },
+        tonesStack: { 'U+0E48': 0, 'U+0E49': 0, 'U+0E4A': 0, 'U+0E4B': 0, 'U+0E4C': 0, 'U+0E4E': 0 }   // เลื่อนเพิ่มเฉพาะตอนซ้อนบนสระบน (+ = ขวา)
       },
       anchors: {},                    // base: {tx,ty,bx,by}  mark: {x,y}
       autoTune: {                     // แท็บ จูนอัตโนมัติ
@@ -184,4 +186,4 @@
   root.ProjectSettings = Settings;
   if (typeof module !== 'undefined' && module.exports) module.exports = Settings;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'settings': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'settings': '2.0.0-cba108e5' });

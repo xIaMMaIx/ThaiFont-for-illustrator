@@ -10,7 +10,7 @@
   const { state, S, norm, displayChar, customOf, changed } = A;
 
   const SPECIMENS = {
-    stack: { label: 'ซ้อนกัน', text: 'กิ่ ปี้ ฟื้ ฝั่ ปั้ สิ้ ที่ น้ำ ป่ำ' },
+    stack: { label: 'ซ้อนกัน', text: 'กิ่ ปี้ ฟื้ ฝั่ ปั้ สิ้ ที่ ซึ้ง ชื่อ น้ำ ป่ำ' },
     upper: { label: 'สระบน', text: 'กิ ปี ฟึ ฝื บั ปั ฟั ส็ ศิ' },
     tone: { label: 'วรรณยุกต์', text: 'ก่ ป้ ฟ๊ ส๋ ห่ ฬ้ ด๋ ต่' },
     lower: { label: 'สระล่าง', text: 'กุ ญุ ฐู ฎุ ฏู รุ ปู ตฺ' },
@@ -19,6 +19,8 @@
   function specimenText() {
     if (state.specimen !== 'mine') return SPECIMENS[state.specimen].text;
     const d = state.active;
+    if (d.kind === 'mark-tone') return ['ก', 'ป', 'น', 'ฟ', 'ส'].map(c => c + d.char).concat(['กิ', 'ปี', 'ซึ', 'ชื', 'ปั'].map(c => c + d.char)).join(' ');
+    if (d.kind === 'mark-top') return ['ก', 'ป', 'น', 'ฟ', 'ส'].map(c => c + d.char).concat(['ก', 'ป', 'ซ'].map(c => c + d.char + '่'), ['ก', 'ป', 'ซ'].map(c => c + d.char + '้')).join(' ');
     if (GD.isMark(d)) return ['ก', 'ป', 'น', 'ฟ', 'ส'].map(c => c + d.char).join(' ');
     if (d.thaiConsonant) return [d.char + 'ิ', d.char + 'ี่', d.char + '้', d.char + 'ั้', d.char + 'ุ', d.char + 'ู่', d.char + 'ำ'].join(' ');
     return d.char + d.char + ' ' + 'น' + d.char + 'น';
@@ -54,6 +56,20 @@
       const sc = scrub({ label: '◌' + def.char, title: def.name + ' — ลากเพื่อเลื่อนซ้าย/ขวา', value: mk.tones[code] || 0, min: -150, max: 150, base: 0,
         onInput: v => { mk.tones[code] = v; changed('quiet'); } });
       tg.appendChild(sc.el);
+    });
+
+    // วรรณยุกต์ซ้อนบนสระบน: G = ทุกตัว + รายวรรณยุกต์ (บวกเพิ่มจากค่าด้านบน)
+    mk.tonesStack = mk.tonesStack || {};
+    const gx = $('stackXRow'); gx.innerHTML = '';
+    gx.appendChild(el('span', { class: 'gap-key', style: 'background:var(--text-faint)' }, 'G'));
+    gx.appendChild(scrub({ label: 'เลื่อนวรรณยุกต์ซ้อนทุกตัว ซ้าย/ขวา', value: mk.stackX || 0, min: -150, max: 150, unit: 'pt', base: 0,
+      onInput: v => { mk.stackX = v; changed('quiet'); } }).el);
+    const sg = $('toneStackGrid'); sg.innerHTML = '';
+    PS.TONE_CODES.forEach(code => {
+      const def = GD.BY_CODE[code];
+      const sc = scrub({ label: '◌ิ' + def.char, title: def.name + ' เมื่อซ้อนบนสระบน — ลากเพื่อเลื่อนซ้าย/ขวา (เพิ่มจากค่าปกติ)', value: mk.tonesStack[code] || 0, min: -150, max: 150, base: 0,
+        onInput: v => { mk.tonesStack[code] = v; changed('quiet'); } });
+      sg.appendChild(sc.el);
     });
     drawMarkDiagram();
   }
@@ -122,6 +138,8 @@
       info.textContent = 'เลื่อนตัวนี้ทุกครั้งที่ใช้ (+ = ขวา / ขึ้น)';
       add('x', 'เลื่อน ←→'); add('y', 'เลื่อน ↑↓');
       if (def.kind === 'mark-top') {
+        info.textContent = 'เลื่อนตัวนี้ทุกครั้งที่ใช้ (+ = ขวา / ขึ้น) · "วรรณยุกต์ซ้อน" = จุดที่วรรณยุกต์มาวางบนสระตัวนี้';
+        add('sx', 'วรรณยุกต์ซ้อน ←→'); add('sy', 'วรรณยุกต์ซ้อน ↑↓');
         const mk = S().marks; mk.passThrough = mk.passThrough || {};
         const cb = el('input', { type: 'checkbox' }); cb.checked = !!mk.passThrough[def.code];
         cb.onchange = () => { if (cb.checked) mk.passThrough[def.code] = true; else delete mk.passThrough[def.code]; changed('quiet'); };
@@ -141,4 +159,4 @@
   A.buildMarksControls = buildMarksControls;
   A.tabs.marks = { render: renderMarks, bind: buildMarksControls, wire };
 })();
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/tab-marks': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/tab-marks': '2.0.0-cba108e5' });

@@ -422,10 +422,10 @@
   }
 
   // ================================================================ tabs
-  const TAB_IDS = ['draw', 'spacing', 'marks', 'auto', 'export'];
+  const TAB_IDS = ['draw', 'place', 'spacing', 'marks', 'auto', 'export'];
   // ลำดับการผูกค่าตั้งค่าเข้ากับตัวควบคุม (แท็บส่งออกสร้างตัวควบคุม Canvas/metrics, dock ใช้ค่า ui)
   const BIND_ORDER = ['export', 'spacing', 'dock', 'marks', 'auto'];
-  const WIRE_ORDER = ['draw', 'spacing', 'marks', 'auto', 'export', 'dock'];
+  const WIRE_ORDER = ['draw', 'place', 'spacing', 'marks', 'auto', 'export', 'dock'];
 
   /** วาดแท็บที่เปิดอยู่ใหม่ · light = เรียกจากการเลือกตัว (แท็บวาดไม่ต้องสร้างตารางใหม่) */
   function refreshTab(light) {
@@ -440,6 +440,8 @@
     document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.getAttribute('data-tab') === t));
     TAB_IDS.forEach(p => $('page-' + p).classList.toggle('hidden', p !== t));
     refreshTab();
+    const tab = A.tabs[t];
+    if (tab && tab.enter) tab.enter();   // ทำครั้งเดียวตอนเข้าแท็บ (เช่น ตรวจ Layer อ้างอิงในแท็บ ใส่เส้น)
   }
 
   /** ผูกค่าตั้งค่าปัจจุบันเข้ากับตัวควบคุมของทุกแท็บ (เรียกหลังโหลด/นำเข้า/เปลี่ยนเอกสาร) */
@@ -495,4 +497,4 @@
   });
   document.addEventListener('DOMContentLoaded', init);
 })();
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/core': '2.0.0-1b04fcfe' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/core': '2.0.0-cba108e5' });
