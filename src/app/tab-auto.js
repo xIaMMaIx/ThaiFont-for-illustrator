@@ -246,4 +246,4 @@
 
   A.tabs.auto = { render: renderAuto, bind: bindAutoUI, wire };
 })();
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/tab-auto': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/tab-auto': '2.0.0-2e84cd1e' });

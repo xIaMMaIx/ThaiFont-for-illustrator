@@ -359,4 +359,4 @@
   root.OTLWriter = OTLWriter;
   if (typeof module !== 'undefined' && module.exports) module.exports = OTLWriter;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'otl-writer': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'otl-writer': '2.0.0-2e84cd1e' });

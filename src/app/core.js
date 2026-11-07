@@ -441,7 +441,7 @@
     TAB_IDS.forEach(p => $('page-' + p).classList.toggle('hidden', p !== t));
     refreshTab();
     const tab = A.tabs[t];
-    if (tab && tab.enter) tab.enter();   // ทำครั้งเดียวตอนเข้าแท็บ (เช่น ตรวจ Layer อ้างอิงในแท็บ ใส่เส้น)
+    if (tab && tab.enter) tab.enter();   // ทำครั้งเดียวตอนเข้าแท็บ (เช่น ตรวจ Layer อ้างอิงในแท็บ เลือก/วาง)
   }
 
   /** ผูกค่าตั้งค่าปัจจุบันเข้ากับตัวควบคุมของทุกแท็บ (เรียกหลังโหลด/นำเข้า/เปลี่ยนเอกสาร) */
@@ -497,4 +497,4 @@
   });
   document.addEventListener('DOMContentLoaded', init);
 })();
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/core': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/core': '2.0.0-2e84cd1e' });

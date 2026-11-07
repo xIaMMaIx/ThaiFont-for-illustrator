@@ -151,4 +151,4 @@
 
   root.UI = { $, el, scrub, seg, bindSeg, toast, debounce, svgEl, clamp, confirmDialog };
 })(window);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'ui-controls': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'ui-controls': '2.0.0-2e84cd1e' });

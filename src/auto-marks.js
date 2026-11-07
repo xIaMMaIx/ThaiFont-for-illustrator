@@ -321,4 +321,4 @@
   root.AutoMarks = AutoMarks;
   if (typeof module !== 'undefined' && module.exports) module.exports = AutoMarks;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'auto-marks': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'auto-marks': '2.0.0-2e84cd1e' });

@@ -92,7 +92,7 @@
     } catch (e) { toast('ตัดเชิงไม่สำเร็จ: ' + e.message, { error: true }); }
   }
 
-  /** ช่องตัวอักษร 1 ช่อง · onClick: ค่าเริ่มต้น = เลือกตัวนั้น · decorate(b, def): เพิ่มของในช่อง (แท็บ ใส่เส้น ใช้ทั้งสองอย่าง) */
+  /** ช่องตัวอักษร 1 ช่อง · onClick: ค่าเริ่มต้น = เลือกตัวนั้น · decorate(b, def): เพิ่มของในช่อง (แท็บ เลือก/วาง ใช้ทั้งสองอย่าง) */
   function makeCell(def, onClick, decorate) {
     const st = statusOf(def);
     const click = onClick || A.selectGlyph;
@@ -113,14 +113,14 @@
 
   function updateCell(code) {
     const def = GD.BY_CODE[code];
-    // ช่องเดียวกันอาจอยู่หลายตาราง (แท็บ วาด / ใส่เส้น) — แทนที่ทุกช่องโดยคงการทำงานตอนคลิกของตารางนั้นไว้
+    // ช่องเดียวกันอาจอยู่หลายตาราง (แท็บ วาด / เลือก/วาง) — แทนที่ทุกช่องโดยคงการทำงานตอนคลิกของตารางนั้นไว้
     if (def) document.querySelectorAll('.cell[data-code="' + code + '"]').forEach(old => old.parentNode.replaceChild(makeCell(def, old._click, old._decorate), old));
     if (code === 'U+0E4D' || code === 'U+0E32') updateCell('U+0E33');
     if (code === 'U+0E0D') updateCell('U+F70F');
     if (code === 'U+0E10') updateCell('U+F700');
   }
 
-  /** ตารางตัวอักษรแบ่งตามหมวด (ใช้ร่วมกับแท็บ ใส่เส้น) */
+  /** ตารางตัวอักษรแบ่งตามหมวด (ใช้ร่วมกับแท็บ เลือก/วาง) */
   function renderGlyphGrid(host, list, onClick, decorate) {
     host.innerHTML = '';
     const groups = [];
@@ -168,4 +168,4 @@
   Object.assign(A, { renderGrid, renderGlyphGrid, renderCurrent, updateCell, updateCounts });
   A.tabs.draw = { render() { renderGrid(); renderCurrent(); }, wire };
 })();
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/tab-draw': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'app/tab-draw': '2.0.0-2e84cd1e' });

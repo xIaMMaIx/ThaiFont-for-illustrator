@@ -132,4 +132,4 @@
   root.ThaiLayout = ThaiLayout;
   if (typeof module !== 'undefined' && module.exports) module.exports = ThaiLayout;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'thai-typography': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'thai-typography': '2.0.0-2e84cd1e' });

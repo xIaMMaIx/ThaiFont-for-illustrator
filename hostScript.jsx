@@ -11,13 +11,15 @@
  */
 var TFS = (function () {
     var VERSION = '2.0.0';
-    var BUILD = '2.0.0-cba108e5';
+    var BUILD = '2.0.0-2e84cd1e';
     var GUIDE_LAYER = 'Guides & Info (Locked)';
     var DATA_LAYER = '_TFS Data';
     var TEMP_LAYER = '_TFS temp';
     var REF_LAYER = 'Reference (ไม่ถูกส่งออก)';
     var SETTINGS_ITEM = 'TFS_Settings';
     var PLACED_NOTE = 'TFS placed ';   // note บนต้นฉบับที่ใส่ลงตัวอักษรแล้ว (ตามด้วยรหัสตัว)
+    var PLACED_GROUP = 'placed';       // ชื่อกลุ่มของสำเนาที่วางลง Layer ตัวอักษร
+    var SOURCE_OPACITY = 35;           // ความเข้มของต้นฉบับที่ใส่แล้ว
     var DEFAULT_CFG = { em: 800, baseline: 200, cap: 560, ascender: 650, descender: 100, lsbGuide: 120, rsbGuide: 680 };
 
     // ------------------------------------------------------------------ JSON
@@ -421,19 +423,17 @@ var TFS = (function () {
         return ok({ hasDoc: true, hasArt: layerHasArt(l), sig: signatureOf(l), active: app.activeDocument.activeLayer.name });
     };
 
-    /** ตัวที่ใส่ไว้ก่อนแก้ข้อนี้อาจเป็นสำเนาของต้นฉบับที่จางอยู่ — คืนความเข้มให้ (เฉพาะชิ้นที่มีป้าย PLACED_NOTE) */
+    /** สำเนาจางจาก build ก่อน ๆ (คัดลอกต้นฉบับที่จางอยู่มาทั้งป้าย) — คืนความเข้มให้ ตอน scanAll */
     function fixFadedCopies(l) {
         var n = 0;
-        function rec(c, depth) {
+        function rec(c, inGroup) {
             for (var i = 0; i < c.pageItems.length; i++) {
                 var it = c.pageItems[i];
-                try { if (String(it.note).indexOf(PLACED_NOTE) === 0) { it.opacity = 100; it.note = ''; n++; } } catch (e) { }
-                if (depth < 1 && it.typename === 'GroupItem' && it.name === 'placed') rec(it, depth + 1);
+                if (placedCodeOf(it)) { try { unmarkFaded(it); n++; } catch (e) { } }
+                if (!inGroup && it.typename === 'GroupItem' && it.name === PLACED_GROUP) rec(it, true);
             }
         }
-        var wasLocked = l.locked;
-        try { if (wasLocked) l.locked = false; rec(l, 0); } catch (e2) { }
-        try { if (wasLocked) l.locked = true; } catch (e3) { }
+        try { withUnlocked(l, function (x) { rec(x, false); }); } catch (e2) { }
         return n;
     }
 
@@ -591,12 +591,54 @@ var TFS = (function () {
     };
 
     // ------------------------------------------------------ place selection
+    // ต้นฉบับที่ใส่แล้วถูกทำให้จาง + ติดป้าย note = PLACED_NOTE + รหัสตัว (ไว้คืนความเข้มตอนลบตัวนั้น)
+    // สำเนาที่วางลงตัวอักษรอยู่ในกลุ่มชื่อ PLACED_GROUP และเข้ม 100% เสมอ
+
     /** Layer ระดับบนสุดที่ item อยู่ (item.layer อาจเป็น sublayer) */
     function topLayerOf(it) {
         var l = null;
         try { l = it.layer; } catch (e) { }
         try { while (l && l.parent && l.parent.typename === 'Layer') l = l.parent; } catch (e2) { }
         return l;
+    }
+
+    /** รหัสตัวอักษรในป้ายของวัตถุ ('' = ไม่มีป้าย) */
+    function placedCodeOf(it) {
+        try {
+            var note = String(it.note);
+            return note.indexOf(PLACED_NOTE) === 0 ? note.substring(PLACED_NOTE.length) : '';
+        } catch (e) { return ''; }
+    }
+    function markFaded(it, code) { it.opacity = SOURCE_OPACITY; it.note = PLACED_NOTE + code; }
+    function unmarkFaded(it) { it.opacity = 100; it.note = ''; }
+
+    /** เรียก fn(layer) โดยปลดล็อก Layer ชั่วคราว (คืนสถานะล็อกเดิมเสมอ) */
+    function withUnlocked(l, fn) {
+        var wasLocked = l.locked;
+        try { if (wasLocked) l.locked = false; return fn(l); }
+        finally { try { if (wasLocked) l.locked = true; } catch (e) { } }
+    }
+
+    /** เส้นที่เลือกบน Canvas ที่ใช้ใส่ได้ — ภาพสแกน (Raster/Placed) ถูกข้าม · คืน { items, skipped } หรือ { error } */
+    function selectedArt(doc) {
+        var sel = doc.selection, items = [], skipped = 0;
+        if (sel && sel.typename === 'TextRange') return { error: 'TEXT_EDITING' };
+        for (var i = 0; sel && i < sel.length; i++) {
+            var t = sel[i].typename;
+            if (t === 'TextRange') return { error: 'TEXT_EDITING' };
+            if (t === 'RasterItem' || t === 'PlacedItem') { skipped++; continue; }
+            items.push(sel[i]);
+        }
+        if (!items.length) return { error: skipped ? 'ONLY_IMAGES' : 'NO_SELECTION' };
+        return { items: items, skipped: skipped };
+    }
+
+    /** อัตราย่อขยาย: ขนาดเดิม = 1 · มีอัตราร่วมแล้วใช้ต่อ · ยังไม่มีและตัวนี้รู้ความสูงที่ควรเป็น → ตั้งอัตราใหม่จากตัวนี้ */
+    function placeScale(opts, h) {
+        if (opts.keepSize) return { scale: 1, isNew: false };
+        if (opts.scale > 0) return { scale: opts.scale, isNew: false };
+        if (opts.refH > 0 && h > 0.5) return { scale: opts.refH / h, isNew: true };
+        return { scale: 1, isNew: false };
     }
 
     /**
@@ -609,116 +651,45 @@ var TFS = (function () {
         try {
             if (!hasDoc()) return fail('NO_DOC');
             opts = opts || {};
-            var doc = app.activeDocument, sel = doc.selection;
-            if (sel && sel.typename === 'TextRange') return fail('TEXT_EDITING');
-            var items = [], skipped = 0;
-            for (var i = 0; sel && i < sel.length; i++) {
-                var t = sel[i].typename;
-                if (t === 'TextRange') return fail('TEXT_EDITING');
-                if (t === 'RasterItem' || t === 'PlacedItem') { skipped++; continue; }   // ภาพสแกนต้นฉบับ ไม่ใช่เส้น
-                items.push(sel[i]);
+            var doc = app.activeDocument, art = selectedArt(doc);
+            if (art.error) return fail(art.error);
+            var items = art.items, target = glyphLayer(doc, code), i;
+            if (target) {
+                for (i = 0; i < items.length; i++) if (topLayerOf(items[i]) === target) return fail('SELECTION_IN_TARGET');
+                if (layerHasArt(target) && !opts.replace) return fail('HAS_ART');
+            } else {
+                target = doc.layers.add(); target.name = 'glyph_' + code;
             }
-            if (!items.length) return fail(skipped ? 'ONLY_IMAGES' : 'NO_SELECTION');
-
-            var target = glyphLayer(doc, code);
-            for (var s = 0; s < items.length; s++) {
-                if (target && topLayerOf(items[s]) === target) return fail('SELECTION_IN_TARGET');
-            }
-            if (target && layerHasArt(target) && !opts.replace) return fail('HAS_ART');
-            if (!target) { target = doc.layers.add(); target.name = 'glyph_' + code; }
             target.locked = false; target.visible = true;
             if (opts.replace) target.pageItems.removeAll();
 
             var grp = target.groupItems.add();
-            grp.name = 'placed';
-            for (var d = 0; d < items.length; d++) {
-                var dup = items[d].duplicate(grp, ElementPlacement.PLACEATEND);
-                // ต้นฉบับที่เคยใส่แล้วถูกทำให้จาง (35%) — สำเนาที่วางลงตัวอักษรต้องเข้มเต็มเสมอ
-                try { dup.opacity = 100; if (String(dup.note).indexOf(PLACED_NOTE) === 0) dup.note = ''; } catch (eOp) { }
+            grp.name = PLACED_GROUP;
+            for (i = 0; i < items.length; i++) {
+                var dup = items[i].duplicate(grp, ElementPlacement.PLACEATEND);
+                try { unmarkFaded(dup); } catch (eOp) { }   // ต้นฉบับอาจจางอยู่แล้ว (เคยใส่) — สำเนาต้องเข้มเต็ม
             }
-            var b = grp.geometricBounds, w = b[2] - b[0], h = b[1] - b[3];
-            if (!(w > 0.01 || h > 0.01)) { grp.remove(); return fail('EMPTY'); }
+            var b = grp.geometricBounds, h = b[1] - b[3];
+            if (!(b[2] - b[0] > 0.01 || h > 0.01)) { grp.remove(); return fail('EMPTY'); }
 
-            var scale = opts.scale > 0 ? opts.scale : 0, newScale = false;
-            if (opts.keepSize) scale = 1;
-            else if (!scale) {
-                if (opts.refH > 0 && h > 0.5) { scale = opts.refH / h; newScale = true; }
-                else scale = 1;
-            }
-            if (Math.abs(scale - 1) > 0.0001) {
-                var pct = scale * 100;
+            var sc = placeScale(opts, h);
+            if (Math.abs(sc.scale - 1) > 0.0001) {
+                var pct = sc.scale * 100;
                 grp.resize(pct, pct, true, true, true, true, pct, Transformation.CENTER);
                 b = grp.geometricBounds;
             }
             var dx = (opts.cx !== undefined ? opts.cx : 0) - (b[0] + b[2]) / 2;
-            var dy = opts.y === undefined ? 0 : (opts.anchor === 'top' ? opts.y - b[1] : opts.y - b[3]);
+            var dy = opts.y === undefined ? 0 : opts.y - (opts.anchor === 'top' ? b[1] : b[3]);
             grp.translate(dx, dy);
 
             if (opts.dim) {
-                for (var m = 0; m < items.length; m++) {
-                    try {
-                        var tl = topLayerOf(items[m]);
-                        if (!tl || !isGlyphLayer(tl)) { items[m].opacity = 35; items[m].note = PLACED_NOTE + code; }   // จำไว้ เพื่อคืนความเข้มตอนลบตัวนี้
-                    } catch (eDim) { }
+                for (i = 0; i < items.length; i++) {
+                    try { var tl = topLayerOf(items[i]); if (!tl || !isGlyphLayer(tl)) markFaded(items[i], code); } catch (eDim) { }
                 }
             }
             try { doc.selection = null; } catch (eSel) { }
             doc.activeLayer = target;
-            return ok({ sig: signatureOf(target), scale: scale, newScale: newScale, skipped: skipped, items: items.length });
-        } catch (err) { return fail(err); }
-    };
-
-    /** คืนความเข้มให้ต้นฉบับที่เคยใส่ลงตัวเหล่านี้ (ค้นเฉพาะวัตถุระดับบนของ Layer ที่ไม่ใช่ตัวอักษร) · codes: { code: true } */
-    function restoreSources(doc, codes) {
-        var n = 0;
-        for (var i = 0; i < doc.layers.length; i++) {
-            var l = doc.layers[i];
-            if (isGlyphLayer(l) || l.name === GUIDE_LAYER || l.name === DATA_LAYER) continue;
-            var wasLocked = l.locked;
-            try {
-                if (wasLocked) l.locked = false;
-                for (var k = 0; k < l.pageItems.length; k++) {
-                    var it = l.pageItems[k];
-                    try {
-                        var note = String(it.note);
-                        if (note.indexOf(PLACED_NOTE) === 0 && codes[note.substring(PLACED_NOTE.length)]) { it.opacity = 100; it.note = ''; n++; }
-                    } catch (e) { }
-                }
-            } catch (e2) { }
-            try { if (wasLocked) l.locked = true; } catch (e3) { }
-        }
-        return n;
-    }
-
-    /** ลบตัวอักษรหลายตัวในครั้งเดียว: ลบ Layer ของตัวนั้นทิ้งทั้ง Layer (ใส่/วาดใหม่เมื่อไรระบบสร้าง Layer ให้เอง)
-     *  แล้วคืนความเข้มให้ต้นฉบับที่ใส่มา · codes: [code] · คืน { sigs: { code: '' }, cleared, restored, failed: [{code, error}] } */
-    api.clearGlyphs = function (codes) {
-        try {
-            if (!hasDoc()) return fail('NO_DOC');
-            var doc = app.activeDocument, sigs = {}, set = {}, cleared = 0, failed = [];
-            try { doc.selection = null; } catch (eSel) { }
-            for (var c = 0; c < codes.length; c++) {
-                var code = codes[c], l = glyphLayer(doc, code);
-                set[code] = true; sigs[code] = '';
-                if (!l) continue;
-                try {
-                    l.locked = false; l.visible = true;
-                    // Layer ที่กำลังใช้งานอยู่: ย้ายไป Layer อื่นก่อน (ลบ Layer ที่ active อยู่อาจไม่ผ่าน)
-                    if (doc.activeLayer === l) {
-                        for (var k = 0; k < doc.layers.length; k++) {
-                            var o = doc.layers[k];
-                            if (o !== l && o.name !== GUIDE_LAYER && o.name !== DATA_LAYER) { try { o.locked = false; doc.activeLayer = o; break; } catch (eA) { } }
-                        }
-                    }
-                    l.remove();
-                    cleared++;
-                } catch (eL) {
-                    failed.push({ code: code, error: String(eL) });
-                    sigs[code] = signatureOf(glyphLayer(doc, code));
-                }
-            }
-            shown.doc = null; shown.names = null;   // Layer ที่ panel จำไว้อาจถูกลบไปแล้ว — ให้ switchGlyph วนซ่อนแบบครบอีกครั้ง
-            return ok({ sigs: sigs, cleared: cleared, restored: restoreSources(doc, set), failed: failed });
+            return ok({ sig: signatureOf(target), scale: sc.scale, newScale: sc.isNew, skipped: art.skipped, items: items.length });
         } catch (err) { return fail(err); }
     };
 
@@ -727,11 +698,19 @@ var TFS = (function () {
     function isReferenceLayer(l) {
         return !isGlyphLayer(l) && l.name !== GUIDE_LAYER && l.name !== DATA_LAYER && l.name !== TEMP_LAYER;
     }
+    /** Layer อ้างอิงที่ใช้วาง: ชื่อมาตรฐานก่อน ไม่งั้น Layer อ้างอิงตัวแรก (null = ไม่มี) */
+    function referenceLayer(doc) {
+        var ref = findLayer(doc, REF_LAYER);
+        for (var i = 0; !ref && i < doc.layers.length; i++) if (isReferenceLayer(doc.layers[i])) ref = doc.layers[i];
+        return ref;
+    }
     function artboardRect(doc) {
         try { return doc.artboards[doc.artboards.getActiveArtboardIndex()].artboardRect; } catch (e) { }
         try { return doc.artboards[0].artboardRect; } catch (e2) { }
         return null;
     }
+    /** กรอบสองอันทับกันไหม (รูปแบบ [left, top, right, bottom] เหมือน geometricBounds/artboardRect) */
+    function overlaps(b, r) { return b[0] < r[2] && b[2] > r[0] && b[3] < r[1] && b[1] > r[3]; }
 
     /** สรุปของใน Layer อ้างอิง: มีกี่ชิ้น, ทับ Artboard กี่ชิ้น, Layer ถูกล็อก/ซ่อนอยู่ไหม */
     api.referenceInfo = function () {
@@ -750,11 +729,7 @@ var TFS = (function () {
                     var it = l.pageItems[k];
                     try { if (it.guides) continue; } catch (eG) { }
                     res.items++;
-                    if (!ab) continue;
-                    try {
-                        var b = it.geometricBounds;   // [left, top, right, bottom] · artboardRect ก็รูปแบบเดียวกัน
-                        if (b[0] < ab[2] && b[2] > ab[0] && b[3] < ab[1] && b[1] > ab[3]) res.onBoard++;
-                    } catch (eB) { }
+                    try { if (ab && overlaps(it.geometricBounds, ab)) res.onBoard++; } catch (eB) { }
                 }
             }
             return ok(res);
@@ -765,9 +740,7 @@ var TFS = (function () {
     api.activateReference = function () {
         try {
             if (!hasDoc()) return fail('NO_DOC');
-            var doc = app.activeDocument, ref = findLayer(doc, REF_LAYER);
-            if (!ref) { for (var i = 0; i < doc.layers.length; i++) if (isReferenceLayer(doc.layers[i])) { ref = doc.layers[i]; break; } }
-            var created = false;
+            var doc = app.activeDocument, ref = referenceLayer(doc), created = false;
             if (!ref) {
                 ref = doc.layers.add(); ref.name = REF_LAYER; created = true;
                 try { ref.zOrder(ZOrderMethod.SENDTOBACK); } catch (eZ) { }
@@ -776,6 +749,57 @@ var TFS = (function () {
             doc.activeLayer = ref;
             try { doc.selection = null; } catch (eS) { }
             return ok({ name: ref.name, created: created });
+        } catch (err) { return fail(err); }
+    };
+
+    // ------------------------------------------------------ clear glyphs
+    /** คืนความเข้มให้ต้นฉบับที่เคยใส่ลงตัวเหล่านี้ (วัตถุระดับบนของ Layer อ้างอิง) · codes: { code: true } */
+    function restoreSources(doc, codes) {
+        var n = 0;
+        for (var i = 0; i < doc.layers.length; i++) {
+            if (!isReferenceLayer(doc.layers[i])) continue;
+            try {
+                withUnlocked(doc.layers[i], function (l) {
+                    for (var k = 0; k < l.pageItems.length; k++) {
+                        var it = l.pageItems[k], c = placedCodeOf(it);
+                        if (c && codes[c]) { try { unmarkFaded(it); n++; } catch (e) { } }
+                    }
+                });
+            } catch (e2) { }
+        }
+        return n;
+    }
+
+    /** ลบตัวอักษรหลายตัวในครั้งเดียว: ลบ Layer ของตัวนั้นทิ้งทั้ง Layer (ใส่/วาดใหม่เมื่อไรระบบสร้าง Layer ให้เอง)
+     *  แล้วคืนความเข้มให้ต้นฉบับที่ใส่มา · codes: [code] · คืน { sigs: { code: sig }, cleared, restored, failed: [{code, error}] } */
+    api.clearGlyphs = function (codes) {
+        try {
+            if (!hasDoc()) return fail('NO_DOC');
+            var doc = app.activeDocument, sigs = {}, set = {}, cleared = 0, failed = [];
+            try { doc.selection = null; } catch (eSel) { }
+            for (var c = 0; c < codes.length; c++) {
+                var code = codes[c], l = glyphLayer(doc, code);
+                set[code] = true; sigs[code] = '';
+                if (!l) continue;
+                try {
+                    l.locked = false; l.visible = true;
+                    if (doc.activeLayer === l) {   // ลบ Layer ที่ใช้งานอยู่อาจไม่ผ่าน — ย้ายไป Layer อ้างอิง (หรือ Layer อื่น) ก่อน
+                        var other = referenceLayer(doc);
+                        for (var k = 0; !other && k < doc.layers.length; k++) {
+                            var o = doc.layers[k];
+                            if (o !== l && o.name !== GUIDE_LAYER && o.name !== DATA_LAYER) other = o;
+                        }
+                        if (other) { other.locked = false; doc.activeLayer = other; }
+                    }
+                    l.remove();
+                    cleared++;
+                } catch (eL) {
+                    failed.push({ code: code, error: String(eL) });
+                    sigs[code] = signatureOf(glyphLayer(doc, code));
+                }
+            }
+            shown.doc = null; shown.names = null;   // Layer ที่ switchGlyph จำไว้อาจถูกลบไปแล้ว — ให้วนซ่อนแบบครบอีกครั้ง
+            return ok({ sigs: sigs, cleared: cleared, restored: restoreSources(doc, set), failed: failed });
         } catch (err) { return fail(err); }
     };
 

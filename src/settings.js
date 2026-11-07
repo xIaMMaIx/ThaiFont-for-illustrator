@@ -35,7 +35,7 @@
       },
       metrics: { mode: 'auto', ascender: 900, descender: -300, lineGap: 0, spaceWidth: 220 },
       export: { thai: true, latin: true, symbols: true, onlyDrawn: true, fallback: false, path: '' },
-      place: { scale: 0, from: '', keepSize: false },   // ใส่จากที่เลือก: อัตราย่อขยายร่วมทุกตัว (0 = ยังไม่ตั้ง) และตัวที่ใช้ตั้ง
+      place: { scale: 0, from: '', keepSize: false },   // แท็บ เลือก/วาง: อัตราย่อขยายร่วมทุกตัว (0 = ยังไม่ตั้ง) และตัวที่ใช้ตั้ง
       ui: { previewText: 'ที่นี่ปู่ผู้ใหญ่ ก่อสร้าง ปิ่นโต ฝ้าย ฟ้อนรำ น้ำ ญุ ฐู Hamburgefonstiv 123', previewSize: 36, glyphSet: 'thai', presetCat: 'stack' }
     };
   }
@@ -186,4 +186,4 @@
   root.ProjectSettings = Settings;
   if (typeof module !== 'undefined' && module.exports) module.exports = Settings;
 })(typeof window !== 'undefined' ? window : globalThis);
-;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'settings': '2.0.0-cba108e5' });
+;(typeof window !== 'undefined' ? window : globalThis).TFS_BUILD = Object.assign((typeof window !== 'undefined' ? window : globalThis).TFS_BUILD || {}, { 'settings': '2.0.0-2e84cd1e' });
